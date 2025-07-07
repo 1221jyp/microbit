@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>급식 평가 현황</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; color: #333; text-align: center; padding-top: 50px; }
+        h1 { color: #2c3e50; }
+        .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .poll { margin-top: 20px; }
+        .label { font-size: 1.5em; margin: 10px 0; }
+        .bar-container { background-color: #e0e0e0; border-radius: 5px; margin: 10px 0; }
+        .bar { height: 40px; line-height: 40px; color: white; text-align: right; padding-right: 10px; border-radius: 5px; transition: width 0.5s ease-in-out; }
+        .good-bar { background-color: #28a745; }
+        .bad-bar { background-color: #dc3545; }
+        .count { font-weight: bold; font-size: 1.2em; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>오늘의 급식 만족도 조사</h1>
+        <div class="poll">
+            <div class="label">😊 맛있다</div>
+            <div class="bar-container">
+                <div id="good-bar" class="bar good-bar" style="width: 0%;"></div>
+            </div>
+            <div id="good-count" class="count">0표</div>
+        </div>
+        <div class="poll">
+            <div class="label">🤢 맛없다</div>
+            <div class="bar-container">
+                <div id="bad-bar" class="bar bad-bar" style="width: 0%;"></div>
+            </div>
+            <div id="bad-count" class="count">0표</div>
+        </div>
+    </div>
+
+    <script>
+        function updateStats() {
+            fetch('/stats')
+                .then(response => response.json())
+                .then(data => {
+                    const goodVotes = data.good;
+                    const badVotes = data.bad;
+                    const totalVotes = goodVotes + badVotes;
+
+                    const goodPercentage = totalVotes > 0 ? (goodVotes / totalVotes) * 100 : 0;
+                    const badPercentage = totalVotes > 0 ? (badVotes / totalVotes) * 100 : 0;
+
+                    document.getElementById('good-count').innerText = `${goodVotes}표`;
+                    document.getElementById('bad-count').innerText = `${badVotes}표`;
+
+                    const goodBar = document.getElementById('good-bar');
+                    goodBar.style.width = `${goodPercentage}%`;
+                    goodBar.innerText = `${Math.round(goodPercentage)}%`;
+
+                    const badBar = document.getElementById('bad-bar');
+                    badBar.style.width = `${badPercentage}%`;
+                    badBar.innerText = `${Math.round(badPercentage)}%`;
+                })
+                .catch(error => console.error('데이터를 가져오는 중 오류 발생:', error));
+        }
+
+        // 2초마다 자동으로 데이터를 업데이트합니다.
+        setInterval(updateStats, 2000);
+
+        // 페이지 로드 시 즉시 한 번 실행합니다.
+        window.onload = updateStats;
+    </script>
+
+</body>
+</html>
